@@ -6,7 +6,7 @@
 /*   By: yironmak <yironmak@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/29 13:12:01 by yironmak          #+#    #+#             */
-/*   Updated: 2022/03/31 23:04:36 by yironmak         ###   ########.fr       */
+/*   Updated: 2022/04/06 18:16:04 by yironmak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,11 @@ typedef struct s_philo
 	int				N;
 	int				die_time;
 	int				eat_time;
-	int				sleep_time;
+	int				sl_time;
 	int				is_eat_n_spec;
 	int				eat_n;
-	int				eat_max;
+	int				eat_min;
+	int				works;
 }	t_philo;
 
 int		ft_atoi(const char *str);

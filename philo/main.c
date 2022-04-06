@@ -5,75 +5,58 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: yironmak <yironmak@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/29 13:10:16 by yironmak          #+#    #+#             */
-/*   Updated: 2022/03/31 23:54:50 by yironmak         ###   ########.fr       */
+/*   Created: 2022/04/06 17:42:06 by yironmak          #+#    #+#             */
+/*   Updated: 2022/04/06 18:21:02 by yironmak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	get_ts(t_philo *philo)
+void	check_each_ate_n_times(t_philo *philos, int N, t_mutex *forks)
 {
-	struct timeval	tmp;
+	int	f;
+	int	i;
 
-	gettimeofday(&tmp, &(philo->tz));
-	return ((tmp.tv_sec - philo->tv_start.tv_sec) * 1000 + \
-	(tmp.tv_usec - philo->tv_start.tv_usec) / 1000);
-}
-
-int	check_dying(t_philo *philo)
-{
-	long int		now;
-	int				last_eat_long;
-	struct timeval	tmp;
-
-	gettimeofday(&tmp, &(philo->tz));
-	now = (tmp.tv_sec - philo->tv_start.tv_sec) * 1000 + \
-	(tmp.tv_usec - philo->tv_start.tv_usec) / 1000;
-	last_eat_long = now - philo->last_eat;
-	if (last_eat_long > philo->die_time)
+	i = -1;
+	f = 0;
+	while (++i < N)
+		if (philos[i].eat_n >= philos[i].eat_min)
+			f++;
+	if (f == N)
 	{
-		printf("%d last eat %d %d\n", philo->n + 1, now, philo->last_eat);
-		return (1);
+		i = -1;
+		while (++i < N)
+			pthread_mutex_destroy(&(forks[i]));
+		free(philos);
+		free(forks);
+		exit(0);
 	}
-	return (0);
 }
 
-int	philo_cycle(t_philo *philo)
+void	check_working_status(t_philo *philos, int N, t_mutex *forks)
 {
-	int	tmp;
+	int	i;
+	int	f;
 
-	while (1)
+	i = -1;
+	f = 0;
+	while (++i < N)
 	{
-		if (pthread_mutex_lock(philo->fork_l) == 0)
+		if (philos[i].works == 0)
 		{
-			if (check_dying(philo))
-			{
-				printf("%ld %d died\n", get_ts(philo), philo->n + 1);
-				exit(0);
-			}
-			printf("%d %d has taken a fork\n", get_ts(philo), philo->n + 1);
-			pthread_mutex_lock(philo->fork_r);
-			tmp = get_ts(philo);
-			printf("%d %d has taken a fork\n", tmp, philo->n + 1);
-			printf("%d %d is eating\n", tmp, philo->n + 1);
-			while (get_ts(philo) < tmp + philo->eat_time / 1000)
-				usleep(1000);
-			philo->last_eat = get_ts(philo);
-			printf("%d %d is sleeping\n", tmp + philo->eat_time / 1000, philo->n + 1);
-			pthread_mutex_unlock(philo->fork_l);
-			pthread_mutex_unlock(philo->fork_r);
-			while (get_ts(philo) < philo->last_eat + philo->sleep_time / 1000)
-				usleep(1000);
-			printf("%d %d is thinking\n", tmp + (philo->eat_time + philo->sleep_time) / 1000, philo->n + 1);
+			f = 1;
+			break ;
 		}
 	}
-}
-
-void	*create_philo(void *philo)
-{
-	philo_cycle(((t_philo *)philo));
-	return (NULL);
+	i = -1;
+	if (f)
+	{
+		while (++i < N)
+		{
+			philos[i].works = 0;
+			pthread_mutex_destroy(&(forks[i]));
+		}
+	}
 }
 
 int	main(int argc, char **argv)
@@ -90,6 +73,12 @@ int	main(int argc, char **argv)
 		forks = malloc(N * sizeof(t_mutex));
 		init_forks(N, forks);
 		create_philos(N, argv, &philos, forks);
+		while (1)
+		{
+			check_working_status(philos, N, forks);
+			if (philos[0].is_eat_n_spec)
+				check_each_ate_n_times(philos, N, forks);
+		}
 		i = -1;
 		while (++i < N)
 			pthread_join(philos[i].t, NULL);

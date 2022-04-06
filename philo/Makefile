@@ -1,4 +1,4 @@
-SRCS    =    ./main.c ./ft_atoi.c ./init.c
+SRCS    =    ./main.c ./cycle.c ./ft_atoi.c ./init.c
 
 OBJ_SRC = 	${SRCS:.c=.o}
 
@@ -10,7 +10,7 @@ REM = rm -f
 
 HEADER = ./philo.h
 
-FLAGS = -Wall -Wextra -g
+FLAGS = -Wall -Wextra -Werror -g -fsanitize=thread
 
 .PHONY: all clean fclean re
 
