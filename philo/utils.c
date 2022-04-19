@@ -6,7 +6,7 @@
 /*   By: yironmak <yironmak@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/12 11:59:31 by yironmak          #+#    #+#             */
-/*   Updated: 2022/03/29 13:24:02 by yironmak         ###   ########.fr       */
+/*   Updated: 2022/04/19 12:09:11 by yironmak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,4 +49,13 @@ int	ft_atoi(const char *str)
 		i++;
 	}
 	return (sign * ans);
+}
+
+int	get_ts(t_philo *philo)
+{
+	struct timeval	tmp;
+
+	gettimeofday(&tmp, &(philo->tz));
+	return ((tmp.tv_sec - philo->tv_start.tv_sec) * 1000 + \
+	(tmp.tv_usec - philo->tv_start.tv_usec) / 1000);
 }
